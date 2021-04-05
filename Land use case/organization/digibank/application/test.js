@@ -9,7 +9,7 @@
  * 1. Select an identity from a wallet
  * 2. Connect to network gateway
  * 3. Access PaperNet network
- * 4. Construct request to buy commercial paper
+ * 4. Construct request to buy (buy_request) commercial paper
  * 5. Submit transaction
  * 6. Process response
  */
@@ -20,8 +20,35 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
 const { Wallets, Gateway } = require('fabric-network');
-const CommercialPaper = require('../../magnetocorp/contract/lib/paper.js');
+const Property = require('../../digibank/contract/lib/property.js');
 
+const transactions = async (contract) => {
+
+  console.log("Issuing a property");
+  const issueRes=await contract.submitTransaction('issue', '1', 'OW1', 'ADD1');
+  let property=Property.fromBuffer(issueRes);
+  console.log(property);
+
+  console.log("Updating its status to Listing-Pending");
+  const listPending = await contract.submitTransaction('listPendingForSale', '1', 'OW1');
+  property=Property.fromBuffer(listPending);
+  console.log(property);
+
+  console.log("Updating its status to Listed");
+  const list = await contract.submitTransaction('listForSale', '1', 'OW1');
+  property=Property.fromBuffer(list);
+  console.log(property);
+
+  console.log("Updating its ownership");
+  const newOwn = await contract.submitTransaction('updateOwner', '1', 'OW2');
+  property=Property.fromBuffer(newOwn);
+  console.log(property);
+}
+
+const listPendingForSaleListener = (data) => {
+  console.log(data);
+  return;
+}
 
 // Main program function
 async function main () {
@@ -63,19 +90,14 @@ async function main () {
         // Get addressability to commercial paper contract
         console.log('Use org.papernet.commercialpaper smart contract.');
 
-        const contract = await network.getContract('papercontract', 'org.papernet.commercialpaper');
+        const contract = await network.getContract('propertycontract', 'org.land-reg.property');
 
-        // buy commercial paper
-        console.log('Submit commercial paper buy transaction.');
+        contract.addContractListener(listPendingForSaleListener, 'listPendingForSaleEvent');
+        transactions(contract);
 
-        const buyResponse = await contract.submitTransaction('buy', 'MagnetoCorp', '00001', 'MagnetoCorp', 'DigiBank', '4900000', '2020-05-31');
+        // // request to buy commercial paper using buy_request / transfer two-part transaction
+        // console.log('Submit commercial paper buy_request transaction.');
 
-        // process response
-        console.log('Process buy transaction response.');
-
-        let paper = CommercialPaper.fromBuffer(buyResponse);
-
-        console.log(`${paper.issuer} commercial paper : ${paper.paperNumber} successfully purchased by ${paper.owner}`);
         console.log('Transaction complete.');
 
     } catch (error) {
@@ -93,11 +115,11 @@ async function main () {
 }
 main().then(() => {
 
-    console.log('Buy program complete.');
+    console.log('Buy_request program complete.');
 
 }).catch((e) => {
 
-    console.log('Buy program exception.');
+    console.log('Buy_request program exception.');
     console.log(e);
     console.log(e.stack);
     process.exit(-1);
