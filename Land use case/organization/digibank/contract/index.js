@@ -6,5 +6,6 @@
 
 'use strict';
 
-const cpcontract = require('./lib/papercontract.js');
-module.exports.contracts = [cpcontract];
+const PropertyContract = require('./lib/propertycontract');
+const PaperContract = require('./lib/papercontract');
+module.exports.contracts = [PropertyContract, PaperContract];

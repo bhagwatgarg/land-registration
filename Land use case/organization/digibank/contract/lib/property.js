@@ -11,8 +11,8 @@ const State = require('../ledger-api/state.js');
 
 // Enumerate commercial paper state values
 const cpState = {
-    LISTED:1, 
-    NOT_LISTED:2, 
+    LISTED:1,
+    NOT_LISTED:2,
     LISTING_PENDING:3
 };
 
@@ -23,7 +23,7 @@ const cpState = {
 class Property extends State {
 
     constructor(obj) {
-        super(Property.getClass(), [obj.owner, obj.address]);
+        super(Property.getClass(), [obj.propertyID]);
         Object.assign(this, obj);
     }
 
@@ -32,6 +32,10 @@ class Property extends State {
     */
     getOwner() {
         return this.owner;
+    }
+
+    setOwner(newOwner) {
+        this.owner = newOwner;
     }
 
     setOwnerMSP(mspid) {
@@ -58,15 +62,15 @@ class Property extends State {
     }
 
     isListed() {
-        return this.currentState == cpState.LISTED;
+        return this.currentState === cpState.LISTED;
     }
 
     isNotListed() {
-        return this.currentState == cpState.NOT_LISTED;
+        return this.currentState === cpState.NOT_LISTED;
     }
 
     isListingPending() {
-        return this.currentState == cpState.LISTING_PENDING;
+        return this.currentState === cpState.LISTING_PENDING;
     }
 
     static fromBuffer(buffer) {
@@ -78,7 +82,7 @@ class Property extends State {
     }
 
     /**
-     * Deserialize a state data to property 
+     * Deserialize a state data to property
      * @param {Buffer} data to form back into the object
      */
     static deserialize(data) {
