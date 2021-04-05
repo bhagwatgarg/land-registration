@@ -22,31 +22,26 @@ const yaml = require('js-yaml');
 const { Wallets, Gateway } = require('fabric-network');
 const Property = require('../../digibank/contract/lib/property.js');
 
-const transactions = async (contract) => {
-
-  console.log("Issuing a property");
-  const issueRes=await contract.submitTransaction('issue', '1', 'OW1', 'ADD1');
-  let property=Property.fromBuffer(issueRes);
-  // console.log(property);
-
-  console.log("Updating its status to Listing-Pending");
-  const listPending = await contract.submitTransaction('listPendingForSale', '1', 'OW1');
-  property=Property.fromBuffer(listPending);
-  // console.log(property);
-
-  console.log("Updating its status to Listed");
-  const list = await contract.submitTransaction('listForSale', '1', 'OW1');
-  property=Property.fromBuffer(list);
-  // console.log(property);
-
-  console.log("Updating its ownership");
-  const newOwn = await contract.submitTransaction('updateOwner', '1', 'OW2');
-  property=Property.fromBuffer(newOwn);
-  // console.log(property);
+const listPendingForSaleListener = (event) => {
+  console.log("Property with ID: "+event.propertyID+" is pending to be listed for sale.");
+}
+const listForSaleListener = (event) => {
+  console.log("Property with ID: "+event.propertyID+" has been listed for sale.");
+}
+const updateOwnerListener = (event) => {
+  console.log("The owner for property with Property ID: "+event.propertyID+" has been changed to "+event.newOwner);
 }
 
+const eventListener = (event) => {
+  const eventName=event.eventName;
+  let payload=event.payload.toString();
+  payload=JSON.parse(payload);
+  if(eventName==='listPendingForSaleEvent') listPendingForSaleListener(payload);
+  else if(eventName==='listForSaleEvent') listForSaleListener(payload);
+  else if(eventName==='updateOwnerEvent') updateOwnerListener(payload);
+  return;
+}
 
-// Main program function
 async function main () {
 
     // A wallet stores a collection of identities for use
@@ -88,13 +83,7 @@ async function main () {
 
         const contract = await network.getContract('propertycontract', 'org.land-reg.property');
 
-        await transactions(contract);
-
-        // // request to buy commercial paper using buy_request / transfer two-part transaction
-        // console.log('Submit commercial paper buy_request transaction.');
-
-        console.log('Transaction complete.');
-
+        contract.addContractListener(eventListener);
     } catch (error) {
 
         console.log(`Error processing transaction. ${error}`);
@@ -108,15 +97,5 @@ async function main () {
 
     }
 }
-main().then(() => {
 
-    console.log('Buy_request program complete.');
-
-}).catch((e) => {
-
-    console.log('Buy_request program exception.');
-    console.log(e);
-    console.log(e.stack);
-    process.exit(-1);
-
-});
+main();
