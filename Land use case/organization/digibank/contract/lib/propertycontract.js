@@ -15,7 +15,7 @@ const PropertyList = require('./propertyList');
 // const QueryUtils = require('./queries.js');
 
 /**
- * A custom context provides easy access to list of all commercial papers
+ * A custom context provides easy access to list of all properties
  */
 class PropertyContext extends Context {
 
@@ -28,18 +28,18 @@ class PropertyContext extends Context {
 }
 
 /**
- * Define commercial paper smart contract by extending Fabric Contract class
+ * Define property smart contract by extending Fabric Contract class
  *
  */
 class PropertyContract extends Contract {
 
     constructor() {
-        // Unique namespace when multiple contracts per chaincode file
+        // Unique namespace when multiple contracts (property and property-request) per chaincode file
         super(Property.getClass());
     }
 
     /**
-     * Define a custom context for commercial paper
+     * Define a custom context for property
     */
     createContext() {
         return new PropertyContext();
@@ -56,85 +56,121 @@ class PropertyContract extends Contract {
     }
 
     /**
-     * Issue commercial paper
+     * Issue property (without any validations)
      *
      * @param {Context} ctx the transaction context
-     * @param {String} issuer commercial paper issuer
-     * @param {Integer} paperNumber paper number for this issuer
-     * @param {String} issueDateTime paper issue date
-     * @param {String} maturityDateTime paper maturity date
-     * @param {Integer} faceValue face value of paper
+     * @param {String} propertyID unique property ID
+     * @param {String} owner property owner
+     * @param {String} address property address
     */
     async issue(ctx, propertyID, owner, address) {
 
+        // create new property instance
         let property = Property.createInstance(propertyID, owner, address);
 
+        // set its status and mspid
         property.setNotListed();
 
         let mspid = ctx.clientIdentity.getMSPID();
         property.setOwnerMSP(mspid);
 
+        // add the property to the ledger
         await ctx.propertyList.addProperty(property);
 
         return property;
     }
 
     //1A
+    /**
+     * Set the property status to 'Listing Pending'
+     * @param {Context} ctx the transaction context
+     * @param {String} propertyID unique property ID
+     * @param {String} owner property owner
+     */
     async listPendingForSale(ctx, propertyID, owner) {
+
+        // get property from key
         let propertyKey = Property.makeKey([propertyID]);
         let property = await ctx.propertyList.getProperty(propertyKey);
 
+        // validate the current status and owner
         if(property.getOwner() !== owner){
             throw new Error('Wrong Owner.');
         }
-
         if(property.isListed()) {
             throw new Error('Already Listed!');
         }
-
         if(property.isListingPending()) {
             throw new Error('Already Listing Pending!');
         }
 
         property.setListingPending();
+
+        // upload the changes to the ledger
         await ctx.propertyList.updateProperty(property);
+
+        // emit an event regarding transaction completion
         ctx.stub.setEvent('listPendingForSaleEvent', Buffer.from(JSON.stringify({propertyID, owner})));
         return property;
     }
 
     // 1B
+    /**
+     * Set the porperty status to 'Listed'
+     * @param {Context} ctx the transaction context
+     * @param {String} propertyID unique property ID
+     * @param {String} owner property owner
+     */
     async listForSale(ctx, propertyID, owner) {
+
+        // get property from key
         let propertyKey = Property.makeKey([propertyID]);
         let property = await ctx.propertyList.getProperty(propertyKey);
 
+        // validate the owner and status of the property
         if(property.getOwner() !== owner){
             throw new Error('Wrong Owner.');
         }
-
         if(property.isListed()) {
             throw new Error('Already Listed!');
         }
-
         if(property.isNotListed()){
             throw new Error('Set Listed Pending First');
         }
 
+        // update the property and push it to the ledger
         property.setListed();
         await ctx.propertyList.updateProperty(property);
+
+        // emit an event regarding transaction completion
         ctx.stub.setEvent('listForSaleEvent', Buffer.from(JSON.stringify({propertyID, owner})));
         return property;
     }
+
+    // 3c
+    /**
+     * Update property ownership
+     * @param {COntext} ctx the transaction context
+     * @param {String} propertyID unique property ID
+     * @param {String} newOwner the buyer
+     */
     async updateOwner(ctx, propertyID, newOwner) {
+
+        // get property from key
         let propertyKey = Property.makeKey([propertyID]);
         let property = await ctx.propertyList.getProperty(propertyKey);
 
+        // validate the current status
         if(!property.isListed()) {
             throw new Error('Property Not Listed');
         }
 
+        // update the property and push it to the ledger
         property.setOwner(newOwner);
         property.setNotListed();
         await ctx.propertyList.updateProperty(property);
+
+        // emit an event regarding transaction completion
         ctx.stub.setEvent('updateOwnerEvent', Buffer.from(JSON.stringify({propertyID, newOwner})));
         return property;
     }
