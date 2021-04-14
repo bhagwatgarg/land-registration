@@ -11,7 +11,7 @@ const { Contract, Context } = require('fabric-contract-api');
 
 // PaperNet specifc classes
 const Property = require('./property.js');
-const PropertyList = require('./propertyList');
+const PropertyList = require('./propertylist.js');
 // const QueryUtils = require('./queries.js');
 
 /**

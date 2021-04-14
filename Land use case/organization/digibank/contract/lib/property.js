@@ -10,7 +10,7 @@
 const State = require('../ledger-api/state.js');
 
 // Enumerate commercial paper state values
-const cpState = {
+const pState = {
     LISTED:1,
     NOT_LISTED:2,
     LISTING_PENDING:3
@@ -21,7 +21,6 @@ const cpState = {
  * Class will be used by application and smart contract to define a paper
  */
 class Property extends State {
-
     constructor(obj) {
         super(Property.getClass(), [obj.propertyID]);
         Object.assign(this, obj);
@@ -29,7 +28,7 @@ class Property extends State {
 
     /**
      * Basic getters and setters
-    */
+     */
     getOwner() {
         return this.owner;
     }
@@ -38,39 +37,39 @@ class Property extends State {
         this.owner = newOwner;
     }
 
-    setOwnerMSP(mspid) {
-        this.mspid = mspid;
-    }
-
     getOwnerMSP() {
         return this.mspid;
+    }
+
+    setOwnerMSP(mspid) {
+        this.mspid = mspid;
     }
 
     /**
      * Useful methods to encapsulate property states
      */
     setListed() {
-        this.currentState = cpState.LISTED;
+        this.currentState = pState.LISTED;
     }
 
     setNotListed() {
-        this.currentState = cpState.NOT_LISTED;
+        this.currentState = pState.NOT_LISTED;
     }
 
     setListingPending() {
-        this.currentState = cpState.LISTING_PENDING;
+        this.currentState = pState.LISTING_PENDING;
     }
 
     isListed() {
-        return this.currentState === cpState.LISTED;
+        return this.currentState === pState.LISTED;
     }
 
     isNotListed() {
-        return this.currentState === cpState.NOT_LISTED;
+        return this.currentState === pState.NOT_LISTED;
     }
 
     isListingPending() {
-        return this.currentState === cpState.LISTING_PENDING;
+        return this.currentState === pState.LISTING_PENDING;
     }
 
     static fromBuffer(buffer) {
@@ -94,11 +93,11 @@ class Property extends State {
      */
 
     static createInstance(propertyID, owner, address) {
-        return new Property({ propertyID, owner, address});
+        return new Property({ propertyID, owner, address });
     }
 
     static getClass() {
-        return 'org.land-reg.property';
+        return "org.land-reg.property";
     }
 }
 

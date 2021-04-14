@@ -10,12 +10,13 @@
 const State = require('../ledger-api/state.js');
 
 // Enumerate commercial paper state values
-const cpState = {
+const prState = {
     INITIATED: 1,
     ACCEPTED_BY_SELLER: 2,
-    PAYMENT_DONE: 3,
-    COMPLETED: 4,
-    REJECTED: 5
+    FINALIZED_BY_BUYER: 3,
+    PAYMENT_DONE: 4,
+    COMPLETED: 5,
+    REJECTED: 6
 };
 
 /**
@@ -23,68 +24,79 @@ const cpState = {
  * Class will be used by application and smart contract to define a paper
  */
 class PropertyRequest extends State {
-
     constructor(obj) {
-        super(PropertyRequest.getClass(), [obj.buyer, obj.requestID]);
+        super(PropertyRequest.getClass(), [obj.requestID]);
         Object.assign(this, obj);
     }
 
     /**
      * Basic getters and setters
-    */
+     */
     getBuyer() {
         return this.buyer;
     }
 
-    setBuyerMSP(mspid) {
-        this.mspid = mspid;
+    setBuyer(newBuyer) {
+        this.buyer = newBuyer;
     }
 
     getBuyerMSP() {
         return this.mspid;
     }
 
+    setBuyerMSP(mspid) {
+        this.mspid = mspid;
+    }
+
     /**
      * Useful methods to encapsulate property request states
      */
     setInitiated() {
-        this.currentState = cpState.INITIATED;
+        this.currentState = prState.INITIATED;
     }
 
     setAcceptedBySeller() {
-        this.currentState = cpState.ACCEPTED_BY_SELLER;
+        this.currentState = prState.ACCEPTED_BY_SELLER;
+    }
+
+    setFinalizedByBuyer() {
+        this.currentState = prState.ACCEPTED_BY_SELLER;
     }
 
     setPaymentDone() {
-        this.currentState = cpState.PAYMENT_DONE;
+        this.currentState = prState.PAYMENT_DONE;
     }
 
     setCompleted() {
-        this.currentState = cpState.COMPLETED;
+        this.currentState = prState.COMPLETED;
     }
 
     setRejected() {
-        this.currentState = cpState.REJECTED;
+        this.currentState = prState.REJECTED;
     }
 
     isInitiated() {
-        return this.currentState === cpState.INITIATED;
+        return this.currentState === prState.INITIATED;
     }
 
     isAcceptedBySeller() {
-        return this.currentState === cpState.ACCEPTED_BY_SELLER;
+        return this.currentState === prState.ACCEPTED_BY_SELLER;
+    }
+
+    isFinalizedByBuyer() {
+        return this.currentState === prState.FINALIZED_BY_BUYER;
     }
 
     isPaymentDone() {
-        return this.currentState === cpState.PAYMENT_DONE;
+        return this.currentState === prState.PAYMENT_DONE;
     }
 
     isCompleted() {
-        return this.currentState === cpState.COMPLETED;
+        return this.currentState === prState.COMPLETED;
     }
 
     isRejected() {
-        return this.currentState === cpState.REJECTED;
+        return this.currentState === prState.REJECTED;
     }
 
     static fromBuffer(buffer) {
@@ -108,11 +120,11 @@ class PropertyRequest extends State {
      */
 
     static createInstance(requestID, propertyID, buyer, amount) {
-        return new PropertyRequest({requestID, propertyID, buyer, amount});
+        return new PropertyRequest({ requestID, propertyID, buyer, amount });
     }
 
     static getClass() {
-        return 'org.land-reg.propertyrequest';
+        return "org.land-reg.propertyrequest";
     }
 }
 

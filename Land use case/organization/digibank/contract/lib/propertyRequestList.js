@@ -9,7 +9,7 @@
 // Utility class for collections of ledger states --  a state list
 const StateList = require('../ledger-api/statelist.js');
 
-const PropertyRequest = require('./propertyRequest.js');
+const PropertyRequest = require('./propertyrequest.js');
 
 class PropertyRequestList extends StateList {
 
