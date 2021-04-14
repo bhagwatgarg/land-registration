@@ -38,6 +38,17 @@ const transactions = async (contract) => {
   const list = await contract.submitTransaction('listForSale', '1', 'OW1');
   property=Property.fromBuffer(list);
   // console.log(property);
+  
+  //let list2=await contract.submitTransaction('getList');
+  //console.log(JSON.parse(list2.toString()).map((res)=>{
+    //  res=res.Record;
+    //  let res2={
+      //    address: res.address,
+      //    owner: res.owner,
+      //    propertyID: res.propertyID,
+     // };
+    //  return res2;
+ // }));
 
   console.log("Updating its ownership");
   const newOwn = await contract.submitTransaction('updateOwner', '1', 'OW2');
