@@ -11,9 +11,9 @@ const State = require('../ledger-api/state.js');
 
 // Enumerate commercial paper state values
 const pState = {
-    LISTED:1,
-    NOT_LISTED:2,
-    LISTING_PENDING:3
+    NOT_LISTED:1,
+    LISTING_PENDING:2,
+    LISTED:3,
 };
 
 /**

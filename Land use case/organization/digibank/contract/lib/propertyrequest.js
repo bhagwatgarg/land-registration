@@ -60,7 +60,7 @@ class PropertyRequest extends State {
     }
 
     setFinalizedByBuyer() {
-        this.currentState = prState.ACCEPTED_BY_SELLER;
+        this.currentState = prState.FINALIZED_BY_BUYER;
     }
 
     setPaymentDone() {
@@ -119,7 +119,7 @@ class PropertyRequest extends State {
      * Factory method to create a property request object
      */
 
-    static createInstance(requestID, propertyID, buyer, amount) {
+    static createInstance(propertyID, requestID, buyer, amount) {
         return new PropertyRequest({ requestID, propertyID, buyer, amount });
     }
 

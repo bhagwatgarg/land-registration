@@ -61,7 +61,7 @@ class PropertyRequestContract extends Contract {
      * @param {String} buyer PropertyRequest buyer
      * @param {String} amount PropertyRequest amount
      */
-    async issue(ctx, PropertyID, RequestID, buyer, amount) {
+    async initiate(ctx, PropertyID, RequestID, buyer, amount) {
         // create new PropertyRequest instance
         let property_request = PropertyRequest.createInstance(
             PropertyID,
@@ -79,6 +79,10 @@ class PropertyRequestContract extends Contract {
         // add the PropertyRequest to the ledger
         await ctx.propertyRequestList.addPropertyRequest(property_request);
 
+        ctx.stub.setEvent(
+            "initiateEvent",
+            Buffer.from(JSON.stringify(property_request))
+        );
         return property_request;
     }
 
@@ -111,7 +115,7 @@ class PropertyRequestContract extends Contract {
         // emit an event regarding transaction completion
         ctx.stub.setEvent(
             "AcceptedBySellerEvent",
-            Buffer.from(JSON.stringify({ RequestID, buyer }))
+            Buffer.from(JSON.stringify(property_request))
         );
 
         return property_request;
@@ -128,7 +132,7 @@ class PropertyRequestContract extends Contract {
         if (property_request.getBuyer() !== buyer) {
             throw new Error("Wrong Buyer.");
         }
-        if (!property_request.isAccepted()) {
+        if (!property_request.isAcceptedBySeller()) {
             throw new Error("First Get Accepted By Seller!");
         }
         if (property_request.isFinalizedByBuyer()) {
@@ -141,12 +145,12 @@ class PropertyRequestContract extends Contract {
         property_request.setFinalizedByBuyer();
 
         // upload the changes to the ledger
-        await ctx.propertyRequestList.updateProperty(property_request);
+        await ctx.propertyRequestList.updatePropertyRequest(property_request);
 
         // emit an event regarding transaction completion
         ctx.stub.setEvent(
             "FinalizedByBuyerEvent",
-            Buffer.from(JSON.stringify({ RequestID, buyer }))
+            Buffer.from(JSON.stringify(property_request))
         );
 
         return property_request;
@@ -176,12 +180,12 @@ class PropertyRequestContract extends Contract {
         property_request.setPaymentDone();
 
         // upload the changes to the ledger
-        await ctx.propertyRequestList.updateProperty(property_request);
+        await ctx.propertyRequestList.updatePropertyRequest(property_request);
 
         // emit an event regarding transaction completion
         ctx.stub.setEvent(
             "PaymentDoneEvent",
-            Buffer.from(JSON.stringify({ RequestID, buyer }))
+            Buffer.from(JSON.stringify(property_request))
         );
 
         return property_request;
@@ -201,22 +205,22 @@ class PropertyRequestContract extends Contract {
         if (!property_request.isPaymentDone()) {
             throw new Error("First Get Payment Done!");
         }
-        if (property_request.isComplete()) {
+        if (property_request.isCompleted()) {
             throw new Error("Transaction Already Complete!");
         }
         if (property_request.isRejected()) {
             throw new Error("Error! Already Rejected.");
         }
 
-        property_request.setComplete();
+        property_request.setCompleted();
 
         // upload the changes to the ledger
-        await ctx.propertyRequestList.updateProperty(property_request);
+        await ctx.propertyRequestList.updatePropertyRequest(property_request);
 
         // emit an event regarding transaction completion
         ctx.stub.setEvent(
             "CompleteEvent",
-            Buffer.from(JSON.stringify({ RequestID, buyer }))
+            Buffer.from(JSON.stringify(property_request))
         );
 
         return property_request;
@@ -246,12 +250,12 @@ class PropertyRequestContract extends Contract {
         property_request.setRejected();
 
         // upload the changes to the ledger
-        await ctx.propertyRequestList.updateProperty(property_request);
+        await ctx.propertyRequestList.updatePropertyRequest(property_request);
 
         // emit an event regarding transaction completion
         ctx.stub.setEvent(
             "RejectEvent",
-            Buffer.from(JSON.stringify({ RequestID, buyer }))
+            Buffer.from(JSON.stringify(property_request))
         );
 
         return property_request;
