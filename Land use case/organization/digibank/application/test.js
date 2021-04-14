@@ -21,21 +21,22 @@ const fs = require('fs');
 const yaml = require('js-yaml');
 const { Wallets, Gateway } = require('fabric-network');
 const Property = require('../../digibank/contract/lib/property.js');
+const PropertyRequest = require('../../digibank/contract/lib/propertyrequest');
 
-const transactions = async (contract) => {
+const transactions = async (propertyContract, propertyRequestContract) => {
 
   console.log("Issuing a property");
-  const issueRes=await contract.submitTransaction('issue', '1', 'OW1', 'ADD1');
+  const issueRes=await propertyContract.submitTransaction('issue', '1', 'OW1', 'ADD1');
   let property=Property.fromBuffer(issueRes);
   // console.log(property);
 
   console.log("Updating its status to Listing-Pending");
-  const listPending = await contract.submitTransaction('listPendingForSale', '1', 'OW1');
+  let listPending = await propertyContract.submitTransaction('listPendingForSale', '1', 'OW1');
   property=Property.fromBuffer(listPending);
   // console.log(property);
 
   console.log("Updating its status to Listed");
-  const list = await contract.submitTransaction('listForSale', '1', 'OW1');
+  const list = await propertyContract.submitTransaction('listForSale', '1', 'OW1');
   property=Property.fromBuffer(list);
   // console.log(property);
   
@@ -50,10 +51,49 @@ const transactions = async (contract) => {
     //  return res2;
  // }));
 
+  console.log("Issuing Request for 2500");
+  let res=await propertyRequestContract.submitTransaction('issue', '1', 'r1', 'buy1', '2500');
+  let propertyRequest=PropertyRequest.fromBuffer(res);
+  console.log(propertyRequest);
+
+  console.log("Accept Offer");
+  res=await propertyRequestContract.submitTransaction('AcceptOffer', 'r1','buy1');
+  propertyRequest=PropertyRequest.fromBuffer(res);
+  console.log(propertyRequest);
+
+  console.log("Buyer Finalizes");
+  res=await propertyRequestContract.submitTransaction('FinalizeProperty', 'r1','buy1');
+  propertyRequest=PropertyRequest.fromBuffer(res);
+  console.log(propertyRequest);
+
+  console.log("Payment Done");
+  res=await propertyRequestContract.submitTransaction('MakePayment', 'r1','buy1');
+  propertyRequest=PropertyRequest.fromBuffer(res);
+  console.log(propertyRequest);
+
+  console.log("Request Completed");
+  res=await propertyRequestContract.submitTransaction('Complete', 'r1','buy1');
+  propertyRequest=PropertyRequest.fromBuffer(res);
+  console.log(propertyRequest);
+
+  // console.log("Buyer Finalizes");
+  // res=await propertyRequestContract.submitTransaction('FinalizeProperty', 'r1','buy1');
+  // propertyRequest=PropertyRequest.fromBuffer(res);
+  // console.log(propertyRequest);
+
+//   try{
+//       listPending = await contract.submitTransaction('listPendingForSale', '1', 'OW1');
+//       property=Property.fromBuffer(listPending);
+//   } catch(e){
+//       console.log("**********ERROR**********");
+//       console.log(e.responses[0].response.message.split(':').splice(2).join(':'));
+//       console.log("*************************");
+//   }
+
   console.log("Updating its ownership");
-  const newOwn = await contract.submitTransaction('updateOwner', '1', 'OW2');
+  const newOwn = await propertyContract.submitTransaction('updateOwner', '1', 'buy1');
   property=Property.fromBuffer(newOwn);
-  // console.log(property);
+  console.log(property);
 }
 
 
@@ -97,9 +137,11 @@ async function main () {
         // Get addressability to commercial paper contract
         console.log('Use org.papernet.commercialpaper smart contract.');
 
-        const contract = await network.getContract('propertycontract', 'org.land-reg.property');
+        const propertyContract = await network.getContract('propertycontract', 'org.land-reg.property');
+        const propertyRequestContract = await network.getContract('propertycontract', 'org.land-reg.propertyrequest');
 
-        await transactions(contract);
+
+        await transactions(propertyContract, propertyRequestContract);
 
         // // request to buy commercial paper using buy_request / transfer two-part transaction
         // console.log('Submit commercial paper buy_request transaction.');
