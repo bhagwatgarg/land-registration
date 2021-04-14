@@ -32,6 +32,25 @@ const updateOwnerListener = (event) => {
   console.log("The owner for property with Property ID: "+event.propertyID+" has been changed to "+event.newOwner);
 }
 
+const initiatedListener = (event) => {
+  console.log("Offer Request with ID: "+event.requestID+" for property with ID: "+event.propertyID+" has been initiated by "+event.buyer);
+}
+const offerAcceptedListener = (event) => {
+  console.log("Offer Request with ID: "+event.requestID+" for property with ID: "+event.propertyID+" has been accepted by seller");
+}
+const offerFinalizedListener = (event) => {
+  console.log("Offer Request with ID: "+event.requestID+" for property with ID: "+event.propertyID+" has been finalized by buyer");
+}
+const makePaymentListener = (event) => {
+  console.log("Payment corresponding to offer request with ID: "+event.requestID+" for property with ID: "+event.propertyID+" has been done");
+}
+const completeListener = (event) => {
+  console.log("offer request with ID: "+event.requestID+" for property with ID: "+event.propertyID+" was successful and has been marked completed");
+}
+const rejectListener = (event) => {
+  console.log("Offer request with ID: "+event.requestID+" for property with ID: "+event.propertyID+" has been rejected");
+}
+
 const eventListener = (event) => {
   const eventName=event.eventName;
   let payload=event.payload.toString();
@@ -39,6 +58,12 @@ const eventListener = (event) => {
   if(eventName==='listPendingForSaleEvent') listPendingForSaleListener(payload);
   else if(eventName==='listForSaleEvent') listForSaleListener(payload);
   else if(eventName==='updateOwnerEvent') updateOwnerListener(payload);
+  else if(eventName==='initiateEvent') initiatedListener(payload);
+  else if(eventName==='AcceptedBySellerEvent') offerAcceptedListener(payload);
+  else if(eventName==='FinalizedByBuyerEvent') offerFinalizedListener(payload);
+  else if(eventName==='PaymentDoneEvent') makePaymentListener(payload);
+  else if(eventName==='CompleteEvent') completeListener(payload);
+  else if(eventName==='RejectEvent') rejectListener(payload);
   return;
 }
 
@@ -81,9 +106,11 @@ async function main () {
         // Get addressability to commercial paper contract
         console.log('Use org.papernet.commercialpaper smart contract.');
 
-        const contract = await network.getContract('propertycontract', 'org.land-reg.property');
+        const propertyContract = await network.getContract('propertycontract', 'org.land-reg.property');
+        const propertyRequestContract = await network.getContract('propertycontract', 'org.land-reg.property');
 
-        contract.addContractListener(eventListener);
+        propertyContract.addContractListener(eventListener);
+        // propertyRequestContract.addContractListener(eventListener);
     } catch (error) {
 
         console.log(`Error processing transaction. ${error}`);
@@ -92,7 +119,7 @@ async function main () {
     } finally {
 
         // Disconnect from the gateway
-        console.log('Disconnect from Fabric gateway.');
+        // console.log('Disconnect from Fabric gateway.');
         gateway.disconnect();
 
     }
