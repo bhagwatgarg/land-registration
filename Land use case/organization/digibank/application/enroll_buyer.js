@@ -28,9 +28,9 @@ async function main() {
         console.log(`Wallet path: ${walletPath}`);
 
         // Check to see if we've already enrolled the admin user.
-        const userExists = await wallet.get('Buyer');
+        const userExists = await wallet.get('buyer');
         if (userExists) {
-            console.log('An identity for the client user "Buyer" already exists in the wallet');
+            console.log('An identity for the client user "buyer" already exists in the wallet');
             return;
         }
 
@@ -44,11 +44,11 @@ async function main() {
             mspId: 'Org1MSP',
             type: 'X.509',
         };
-        await wallet.put('Buyer', x509Identity);
-        console.log('Successfully enrolled client user "Buyer" and imported it into the wallet');
+        await wallet.put('buyer', x509Identity);
+        console.log('Successfully enrolled client user "buyer" and imported it into the wallet');
 
     } catch (error) {
-        console.error(`Failed to enroll client user "Buyer": ${error}`);
+        console.error(`Failed to enroll client user "buyer": ${error}`);
         process.exit(1);
     }
 }
