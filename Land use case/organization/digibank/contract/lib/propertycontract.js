@@ -154,6 +154,20 @@ class PropertyContract extends Contract {
      * @param {String} propertyID unique property ID
      * @param {String} newOwner the buyer
      */
+     //async getList(ctx) {
+       // let querySelector = {};
+        
+         //       querySelector = { "selector": { "currentState": 1 } };  // 4 = redeemd state
+               
+        //let query = new QueryUtils(ctx, 'org.land-reg.propertyList');
+        //let adhoc_results = await query.queryByAdhoc(querySelector);
+
+      //  return adhoc_results;
+    // }
+     
+     
+     
+     
     async updateOwner(ctx, propertyID, newOwner) {
 
         // get property from key
