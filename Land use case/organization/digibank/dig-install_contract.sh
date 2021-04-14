@@ -18,3 +18,5 @@ peer lifecycle chaincode approveformyorg  --orderer localhost:7050 --ordererTLSH
 peer lifecycle chaincode checkcommitreadiness --channelID mychannel --name propertycontract -v 0 --sequence 1
 cd ../magnetocorp/
 ./mag-install_contract.sh
+cd ../digibank/application/
+./enroll.sh
