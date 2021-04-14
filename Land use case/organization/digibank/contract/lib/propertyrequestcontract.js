@@ -151,7 +151,7 @@ class PropertyRequestContract extends Contract {
 
         return property_request;
     }
-    
+
     async MakePayment(ctx, RequestID, buyer) {
         // get PropertyRequest from key
         let propertyRequestKey = PropertyRequest.makeKey([RequestID]);
@@ -186,7 +186,7 @@ class PropertyRequestContract extends Contract {
 
         return property_request;
     }
-    
+
     async Complete(ctx, RequestID, buyer) {
         // get PropertyRequest from key
         let propertyRequestKey = PropertyRequest.makeKey([RequestID]);
@@ -216,6 +216,41 @@ class PropertyRequestContract extends Contract {
         // emit an event regarding transaction completion
         ctx.stub.setEvent(
             "CompleteEvent",
+            Buffer.from(JSON.stringify({ RequestID, buyer }))
+        );
+
+        return property_request;
+    }
+
+    async Reject(ctx, RequestID, buyer) {
+        // get PropertyRequest from key
+        let propertyRequestKey = PropertyRequest.makeKey([RequestID]);
+        let property_request = await ctx.propertyRequestList.getPropertyRequest(
+            propertyRequestKey
+        );
+
+        // validate the current status and owner
+        if (property_request.getBuyer() !== buyer) {
+            throw new Error("Wrong Buyer.");
+        }
+        if (!property_request.isInitiated()) {
+            throw new Error("Request Not Initiated! Can't Reject");
+        }
+        if (property_request.isPaymentDone()) {
+            throw new Error("Payment Is Already Done. Can't Reject Now!");
+        }
+        if (property_request.isRejected()) {
+            throw new Error("Already Rejected.");
+        }
+
+        property_request.setRejected();
+
+        // upload the changes to the ledger
+        await ctx.propertyRequestList.updateProperty(property_request);
+
+        // emit an event regarding transaction completion
+        ctx.stub.setEvent(
+            "RejectEvent",
             Buffer.from(JSON.stringify({ RequestID, buyer }))
         );
 
