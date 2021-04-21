@@ -29,11 +29,11 @@ const nameSpaces={
 
 const propertyPrinter = (buff)=>{
   buff=Property.fromBuffer(buff);
-  console.log({propertyID: buff.propertyID, owner: buff.owner, address: buff.address, currentState: buff.currentState});
+  console.log({propertyID: buff.propertyID, owner: buff.owner, address: buff.address, propertyState: buff.currentState});
 };
 const propertyRequestPrinter = (buff) => {
   buff=PropertyRequest.fromBuffer(buff);
-  console.log({propertyID: buff.propertyID, requestID: buff.requestID, buyer: buff.buyer, amount: buff.amount, currentState: buff.currentState});
+  console.log({propertyID: buff.propertyID, requestID: buff.requestID, buyer: buff.buyer, amount: buff.amount, requestState: buff.currentState});
 };
 const listPrinter = (buff) => {
   console.log(JSON.parse(buff.toString()).map((res)=>{
