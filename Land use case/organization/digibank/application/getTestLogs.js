@@ -104,7 +104,7 @@ async function main () {
         const network = await gateway.getNetwork('mychannel');
 
         // Get addressability to commercial paper contract
-        console.log('Use org.papernet.commercialpaper smart contract.');
+        console.log('Use property smart contract.');
 
         const propertyContract = await network.getContract('propertycontract', 'org.land-reg.property');
         const propertyRequestContract = await network.getContract('propertycontract', 'org.land-reg.property');
